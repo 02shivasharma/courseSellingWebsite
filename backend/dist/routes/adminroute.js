@@ -38,7 +38,7 @@ Adminrouter.post("signUp", (req, res) => __awaiter(void 0, void 0, void 0, funct
                     password: validSchema.data.password
                 }
             });
-            const token = jsonwebtoken_1.default.sign({ name }, "secretshiva");
+            const token = jsonwebtoken_1.default.sign({ id: admin.id, email: admin.email }, "secretshiva");
             res.json({ token });
         }
     }
@@ -49,13 +49,13 @@ Adminrouter.post("signUp", (req, res) => __awaiter(void 0, void 0, void 0, funct
 Adminrouter.post("/signIn", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, password } = req.body;
-        const user = yield prisma.admin.findFirst({
+        const admin = yield prisma.admin.findFirst({
             where: {
                 email: email,
                 password: password
             }
         });
-        const token = jsonwebtoken_1.default.sign({ email }, "shivasecret");
+        const token = jsonwebtoken_1.default.sign({ id: admin === null || admin === void 0 ? void 0 : admin.id, email: admin === null || admin === void 0 ? void 0 : admin.email }, "shivasecret");
         res.json({ token });
     }
     catch (error) {

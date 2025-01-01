@@ -33,6 +33,5 @@ model Course{
   name  String
   price  String
   description  String
-  userId  Int
-  user    User @relation(fields: [userId], references: [id])
+  users User[] 
 }

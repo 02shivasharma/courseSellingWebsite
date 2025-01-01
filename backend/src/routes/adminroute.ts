@@ -28,7 +28,7 @@ Adminrouter.post("signUp", async(req : Request , res : Response) => {
                     password : validSchema.data.password
                 }
             })
-           const token = jwt.sign({name}, "secretshiva");
+           const token = jwt.sign({id : admin.id, email : admin.email}, "secretshiva");
            res.json({token})
 
         }
@@ -42,13 +42,13 @@ Adminrouter.post("signUp", async(req : Request , res : Response) => {
 Adminrouter.post("/signIn", async(req: Request, res : Response) => {
     try{
         const {email, password} = req.body;
-        const user = await prisma.admin.findFirst({
+        const admin = await prisma.admin.findFirst({
             where : {
                 email : email,
                 password : password
             }
         })
-        const token = jwt.sign({email}, "shivasecret");
+        const token = jwt.sign({id : admin?.id, email : admin?.email}, "shivasecret");
 
         res.json({token})
     }catch(error){

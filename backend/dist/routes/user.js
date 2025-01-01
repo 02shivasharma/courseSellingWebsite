@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const authMiddleware_1 = require("../middleware/authMiddleware");
 const zod_1 = require("zod");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const client_1 = require("@prisma/client");
@@ -42,7 +43,7 @@ userRouter.post("/singup", (req, res) => __awaiter(void 0, void 0, void 0, funct
                     password: result.data.password
                 }
             });
-            const token = jsonwebtoken_1.default.sign({ email: user.email }, "secretissecret");
+            const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email }, "secretShiva");
             res.json({ token });
         }
     }
@@ -50,7 +51,7 @@ userRouter.post("/singup", (req, res) => __awaiter(void 0, void 0, void 0, funct
         console.log("Something went wrong while signing up", error);
     }
 }));
-userRouter.post("/signIn", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+userRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const result = UserSignInSchema.safeParse(req.body);
         if (!result.success) {
@@ -65,13 +66,47 @@ userRouter.post("/signIn", (req, res) => __awaiter(void 0, void 0, void 0, funct
             });
             if (!user) {
                 res.status(404).json({ error: "User Doesn't exsitsts" });
+                return;
             }
-            const token = jsonwebtoken_1.default.sign({ email: user === null || user === void 0 ? void 0 : user.email }, "secretShiva");
+            const token = jsonwebtoken_1.default.sign({ id: user === null || user === void 0 ? void 0 : user.id, email: user === null || user === void 0 ? void 0 : user.email }, "secretShiva");
             res.json({ token });
         }
     }
     catch (error) {
         console.log("Something went wrong while signing In", error);
+    }
+}));
+userRouter.get("/courses", authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const courses = yield prisma.course.findMany({
+            select: {
+                id: true,
+                name: true,
+                price: true,
+                description: true,
+            }
+        });
+        res.json({ courses });
+    }
+    catch (error) {
+        console.error("Error While fethcing courses");
+    }
+}));
+userRouter.get("/courses/:id", authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const course = yield prisma.course.findFirst({
+            where: {
+                id: parseInt(id)
+            }
+        });
+        if (!course) {
+            res.json({ error: "Error while finding this course" });
+        }
+        res.json({ course });
+    }
+    catch (error) {
+        console.error("Error foundingl this course", error);
     }
 }));
 exports.default = userRouter;
